@@ -8,12 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
-  DateTime selectedDate = DateTime.utc(
-    DateTime.now().year,
-    DateTime.now().month,
-    DateTime.now().day,
-  );
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ScheduleProvider>();
