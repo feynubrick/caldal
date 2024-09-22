@@ -1,10 +1,14 @@
 import 'package:calendar_scheduler/model/schedule_model.dart';
+import 'package:calendar_scheduler/repository/auth_repository.dart';
 import 'package:calendar_scheduler/repository/schedule_repository.dart';
 import 'package:flutter/material.dart';
 
 class ScheduleProvider extends ChangeNotifier {
-  final ScheduleRepository repository;
+  final AuthRepository authRepository;
+  final ScheduleRepository scheduleRepository;
 
+  String? accessToken;
+  String? refreshToken;
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
@@ -13,15 +17,84 @@ class ScheduleProvider extends ChangeNotifier {
   Map<DateTime, List<ScheduleModel>> cache = {};
 
   ScheduleProvider({
-    required this.repository,
+    required this.scheduleRepository,
+    required this.authRepository,
   }) : super() {
     getSchedules(date: selectedDate);
+  }
+
+  void updateTokens({
+    String? refreshToken,
+    String? accessToken,
+  }) {
+    if (refreshToken != null) {
+      this.refreshToken = refreshToken;
+    }
+
+    if (accessToken != null) {
+      this.accessToken = accessToken;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> register({
+    required String email,
+    required String password,
+  }) async {
+    final resp = await authRepository.register(
+      email: email,
+      password: password,
+    );
+
+    updateTokens(
+      refreshToken: resp.refreshToken,
+      accessToken: resp.accessToken,
+    );
+  }
+
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+    final resp = await authRepository.login(
+      email: email,
+      password: password,
+    );
+
+    updateTokens(
+      refreshToken: resp.refreshToken,
+      accessToken: resp.accessToken,
+    );
+  }
+
+  void logout() {
+    refreshToken = null;
+    accessToken = null;
+
+    cache = {};
+    notifyListeners();
+  }
+
+  Future<void> rotateToken({
+    required String refreshToken,
+    required bool isRefreshToken,
+  }) async {
+    final token = await authRepository.rotateAccessToken(
+      refreshToken: refreshToken,
+    );
+    accessToken = token;
+
+    notifyListeners();
   }
 
   void getSchedules({
     required DateTime date,
   }) async {
-    final resp = await repository.getSchedules(date: date);
+    final resp = await scheduleRepository.getSchedules(
+      accessToken: accessToken!,
+      date: date,
+    );
 
     cache.update(date, (value) => resp, ifAbsent: () => resp);
 
@@ -52,8 +125,10 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final savedScheduleId =
-          await repository.createSchedule(schedule: schedule);
+      final savedScheduleId = await scheduleRepository.createSchedule(
+        accessToken: accessToken!,
+        schedule: schedule,
+      );
       cache.update(
         targetDate,
         (value) => value
@@ -91,7 +166,10 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await repository.deleteSchedule(id: id);
+      await scheduleRepository.deleteSchedule(
+        accessToken: accessToken!,
+        id: id,
+      );
     } catch (e) {
       cache.update(
         date,
