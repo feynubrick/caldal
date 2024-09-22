@@ -27,10 +27,6 @@ class ScheduleRepository {
       },
     );
 
-    if (resp.statusCode == 401) {
-
-    }
-
     return resp.data
         .map<ScheduleModel>((x) => ScheduleModel.fromJson(json: x))
         .toList();

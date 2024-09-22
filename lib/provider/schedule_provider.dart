@@ -7,8 +7,6 @@ class ScheduleProvider extends ChangeNotifier {
   final AuthRepository authRepository;
   final ScheduleRepository scheduleRepository;
 
-  String? accessToken;
-  String? refreshToken;
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
@@ -20,79 +18,64 @@ class ScheduleProvider extends ChangeNotifier {
     required this.scheduleRepository,
     required this.authRepository,
   }) : super() {
-    getSchedules(date: selectedDate);
+    _initializeSchedules();
   }
 
-  void updateTokens({
-    String? refreshToken,
-    String? accessToken,
-  }) {
-    if (refreshToken != null) {
-      this.refreshToken = refreshToken;
+  Future<void> _initializeSchedules() async {
+    final token = await authRepository.getAccessToken();
+    if (token != null) {
+      getSchedules(date: selectedDate);
     }
-
-    if (accessToken != null) {
-      this.accessToken = accessToken;
-    }
-
-    notifyListeners();
   }
 
   Future<void> register({
     required String email,
     required String password,
   }) async {
-    final resp = await authRepository.register(
+    await authRepository.register(
       email: email,
       password: password,
     );
-
-    updateTokens(
-      refreshToken: resp.refreshToken,
-      accessToken: resp.accessToken,
-    );
+    notifyListeners();
   }
 
   Future<void> login({
     required String email,
     required String password,
   }) async {
-    final resp = await authRepository.login(
+    await authRepository.login(
       email: email,
       password: password,
     );
-
-    updateTokens(
-      refreshToken: resp.refreshToken,
-      accessToken: resp.accessToken,
-    );
+    notifyListeners();
+    getSchedules(date: selectedDate);
   }
 
-  void logout() {
-    refreshToken = null;
-    accessToken = null;
-
+  Future<void> logout() async {
+    await authRepository.clearTokens();
     cache = {};
     notifyListeners();
   }
 
-  Future<void> rotateToken({
-    required String refreshToken,
-    required bool isRefreshToken,
-  }) async {
-    final token = await authRepository.rotateAccessToken(
-      refreshToken: refreshToken,
-    );
-    accessToken = token;
-
-    notifyListeners();
+  Future<String?> _getValidAccessToken() async {
+    String? token = await authRepository.getAccessToken();
+    if (token == null) {
+      return null;
+    }
+    // 토큰 만료 체크 로직이 필요하다면 여기에 추가
+    return token;
   }
 
-  void getSchedules({
+  Future<void> getSchedules({
     required DateTime date,
   }) async {
+    final token = await _getValidAccessToken();
+    if (token == null) {
+      return;
+    }
+
     final resp = await scheduleRepository.getSchedules(
-      accessToken: accessToken!,
+      accessToken: token,
       date: date,
     );
 
@@ -101,9 +84,15 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void createSchedule({
+  Future<void> createSchedule({
     required ScheduleModel schedule,
   }) async {
+    final token = await _getValidAccessToken();
+    if (token == null) {
+      // 토큰이 없으면 로그인 필요
+      return;
+    }
+
     final targetDate = schedule.date;
 
     const tempId = 0;
@@ -111,14 +100,14 @@ class ScheduleProvider extends ChangeNotifier {
 
     cache.update(
       targetDate,
-      (value) => [
+          (value) => [
         ...value,
         newSchedule,
       ]..sort(
-          (a, b) => a.startTime.compareTo(
-            b.startTime,
-          ),
+            (a, b) => a.startTime.compareTo(
+          b.startTime,
         ),
+      ),
       ifAbsent: () => [newSchedule],
     );
 
@@ -126,40 +115,46 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final savedScheduleId = await scheduleRepository.createSchedule(
-        accessToken: accessToken!,
+        accessToken: token,
         schedule: schedule,
       );
       cache.update(
         targetDate,
-        (value) => value
+            (value) => value
             .map((e) => e.id == tempId
-                ? e.copyWith(
-                    id: savedScheduleId,
-                  )
-                : e)
+            ? e.copyWith(
+          id: savedScheduleId,
+        )
+            : e)
             .toList(),
       );
     } catch (e) {
       cache.update(
         targetDate,
-        (value) => value.where((e) => e.id != tempId).toList(),
+            (value) => value.where((e) => e.id != tempId).toList(),
       );
     }
 
     notifyListeners();
   }
 
-  void deleteSchedule({
+  Future<void> deleteSchedule({
     required DateTime date,
     required int id,
   }) async {
+    final token = await _getValidAccessToken();
+    if (token == null) {
+      // 토큰이 없으면 로그인 필요
+      return;
+    }
+
     final targetSchedule = cache[date]!.firstWhere(
-      (e) => e.id == id,
+          (e) => e.id == id,
     );
 
     cache.update(
       date,
-      (value) => value.where((e) => e.id != id).toList(),
+          (value) => value.where((e) => e.id != id).toList(),
       ifAbsent: () => [],
     );
 
@@ -167,17 +162,17 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       await scheduleRepository.deleteSchedule(
-        accessToken: accessToken!,
+        accessToken: token,
         id: id,
       );
     } catch (e) {
       cache.update(
         date,
-        (value) => [...value, targetSchedule]..sort(
-            (a, b) => a.startTime.compareTo(
-              b.startTime,
-            ),
+            (value) => [...value, targetSchedule]..sort(
+              (a, b) => a.startTime.compareTo(
+            b.startTime,
           ),
+        ),
       );
     }
 

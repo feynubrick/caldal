@@ -1,14 +1,17 @@
-import 'dart:convert';
-
 import 'package:calendar_scheduler/util/url.dart';
 import 'package:dio/dio.dart';
 
+import '../const/types.dart';
+import '../storage/token_storage.dart';
+
 class AuthRepository {
   final _dio = Dio();
-
+  final TokenStorage tokenStorage;
   final _targetUrl = 'http://${getLocalHostName()}:8000/api/v1/account/auth';
 
-  Future<({String refreshToken, String accessToken})> register({
+  AuthRepository({required this.tokenStorage});
+
+  Future<void> register({
     required String email,
     required String password,
   }) async {
@@ -21,10 +24,11 @@ class AuthRepository {
     );
     final refreshToken = result.data['refresh'] as String;
     final accessToken = result.data['access'] as String;
-    return (refreshToken: refreshToken, accessToken: accessToken);
+    await tokenStorage.saveToken(TokenType.refreshToken, refreshToken);
+    await tokenStorage.saveToken(TokenType.accessToken, accessToken);
   }
 
-  Future<({String refreshToken, String accessToken})> login({
+  Future<void> login({
     required String email,
     required String password,
   }) async {
@@ -38,10 +42,11 @@ class AuthRepository {
 
     final refreshToken = result.data['refresh'] as String;
     final accessToken = result.data['access'] as String;
-    return (refreshToken: refreshToken, accessToken: accessToken);
+    await tokenStorage.saveToken(TokenType.refreshToken, refreshToken);
+    await tokenStorage.saveToken(TokenType.accessToken, accessToken);
   }
 
-  Future<String> rotateAccessToken({
+  Future<void> rotateAccessToken({
     required String refreshToken,
   }) async {
     final result = await _dio.post('$_targetUrl/token/refresh',
@@ -50,7 +55,11 @@ class AuthRepository {
             'authorization': 'Bearer $refreshToken',
           },
         ));
-
-    return result.data['access'] as String;
+    final newAccessToken = result.data['access'] as String;
+    await tokenStorage.saveToken(TokenType.accessToken, newAccessToken);
   }
+
+  Future<String?> getAccessToken() => tokenStorage.getToken(TokenType.accessToken);
+  Future<String?> getRefreshToken() => tokenStorage.getToken(TokenType.refreshToken);
+  Future<void> clearTokens() => tokenStorage.deleteAllTokens();
 }

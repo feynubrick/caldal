@@ -3,6 +3,7 @@ import 'package:calendar_scheduler/provider/schedule_provider.dart';
 import 'package:calendar_scheduler/repository/auth_repository.dart';
 import 'package:calendar_scheduler/repository/schedule_repository.dart';
 import 'package:calendar_scheduler/screen/auth_screen.dart';
+import 'package:calendar_scheduler/storage/token_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -14,20 +15,25 @@ void main() async {
   await initializeDateFormatting();
 
   final database = LocalDatabase();
-
   GetIt.I.registerSingleton<LocalDatabase>(database);
 
+  final tokenStorage = TokenStorage();
+  final authRepository = AuthRepository(tokenStorage: tokenStorage);
   final scheduleRepository = ScheduleRepository();
-  final authRepository = AuthRepository();
   final scheduleProvider = ScheduleProvider(
     scheduleRepository: scheduleRepository,
     authRepository: authRepository,
   );
 
-  runApp(ChangeNotifierProvider(
-    create: (_) => scheduleProvider,
-    child: MaterialApp(
-      home: AuthScreen(),
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => scheduleProvider),
+        Provider<AuthRepository>.value(value: authRepository),
+      ],
+      child: MaterialApp(
+        home: AuthScreen(),
+      ),
     ),
-  ));
+  );
 }
