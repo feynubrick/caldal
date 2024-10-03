@@ -33,7 +33,11 @@ class MainCalendar extends StatelessWidget {
         ),
       ),
       calendarStyle: CalendarStyle(
-        isTodayHighlighted: false,
+        isTodayHighlighted: true,
+        todayDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6.0),
+          color: Colors.red,
+        ),
         defaultDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6.0),
           color: LIGHT_GREY_COLOR,
