@@ -15,6 +15,7 @@ class HomeScreen extends StatelessWidget {
     final schedules = provider.cache[selectedDate] ?? [];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
         backgroundColor: PRIMARY_COLOR,
         onPressed: () {

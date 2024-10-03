@@ -24,7 +24,8 @@ class _AuthScreenState extends State<AuthScreen> {
     final provider = context.watch<ScheduleProvider>();
 
     return Scaffold(
-      body: Padding(
+        backgroundColor: Colors.white,
+        body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Form(
           key: formKey,
