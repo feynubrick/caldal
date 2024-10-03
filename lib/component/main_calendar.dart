@@ -22,6 +22,7 @@ class MainCalendar extends StatelessWidget {
           date.day == selectedDate.day,
       firstDay: DateTime(1800, 1, 1),
       lastDay: DateTime(3000, 1, 1),
+      daysOfWeekHeight: 30,
       focusedDay: DateTime.now(),
       headerStyle: HeaderStyle(
         titleCentered: true,
