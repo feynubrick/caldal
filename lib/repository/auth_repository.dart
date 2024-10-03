@@ -7,7 +7,7 @@ import '../storage/token_storage.dart';
 class AuthRepository {
   final _dio = Dio();
   final TokenStorage tokenStorage;
-  final _targetUrl = 'http://${getLocalHostName()}:8000/api/v1/account/auth';
+  final _targetUrl = 'http://${getLocalHostName()}:8000/api/v1/account';
 
   AuthRepository({required this.tokenStorage});
 
@@ -33,7 +33,7 @@ class AuthRepository {
     required String password,
   }) async {
     final result = await _dio.post(
-      '$_targetUrl/token/pair',
+      '$_targetUrl/auth/token/pair',
       data: {
         'email': email,
         'password': password,
@@ -49,7 +49,7 @@ class AuthRepository {
   Future<void> rotateAccessToken({
     required String refreshToken,
   }) async {
-    final result = await _dio.post('$_targetUrl/token/refresh',
+    final result = await _dio.post('$_targetUrl/auth/token/refresh',
         options: Options(
           headers: {
             'authorization': 'Bearer $refreshToken',
