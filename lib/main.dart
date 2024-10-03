@@ -33,6 +33,13 @@ void main() async {
       ],
       child: MaterialApp(
         home: AuthScreen(),
+        theme: ThemeData(
+          fontFamily: 'Pretendard',
+          textTheme: TextTheme(
+            bodyLarge: TextStyle(fontFamily: 'Pretendard'),
+            bodyMedium: TextStyle(fontFamily: 'Pretendard'),
+          ),
+        ),
       ),
     ),
   );
