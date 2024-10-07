@@ -38,7 +38,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.17
   path_provider: ^2.1.1
   path: ^1.8.3
-  get_it: ^7.6.4
+  get_it: ^8.0.0
   dio: ^5.3.3
   provider: ^6.0.5
   uuid: ^4.1.0
@@ -47,8 +47,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.13.1
-  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^5.0.0
   drift_dev: ^2.13.0
   build_runner: ^2.4.6
 
