@@ -22,8 +22,9 @@ class MainCalendar extends StatelessWidget {
           date.day == selectedDate.day,
       firstDay: DateTime(1800, 1, 1),
       lastDay: DateTime(3000, 1, 1),
-      daysOfWeekHeight: 30,
+      daysOfWeekHeight: 40,
       focusedDay: DateTime.now(),
+      rowHeight: 120,
       headerStyle: HeaderStyle(
         titleCentered: true,
         formatButtonVisible: false,
@@ -31,8 +32,10 @@ class MainCalendar extends StatelessWidget {
           fontWeight: FontWeight.w700,
           fontSize: 16.0,
         ),
+        headerMargin: EdgeInsets.only(bottom: 8),
       ),
       calendarStyle: CalendarStyle(
+        cellMargin: EdgeInsets.all(1),
         isTodayHighlighted: true,
         todayDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6.0),
@@ -65,6 +68,114 @@ class MainCalendar extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: PRIMARY_COLOR,
         ),
+      ),
+      calendarBuilders: CalendarBuilders(
+        defaultBuilder: (context, day, focusedDay) {
+          return Container(
+            margin: EdgeInsets.all(1), // Reduce margin even further if needed
+            decoration: BoxDecoration(
+              color: LIGHT_GREY_COLOR,
+              borderRadius: BorderRadius.circular(6.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    '${day.day}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: DARK_GREY_COLOR,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    // This is where you can add your schedule content
+                    // For now, it's just a placeholder
+                    child: Center(
+                      child: Text(
+                        'Schedule',
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        selectedBuilder: (context, day, focusedDay) {
+          return Container(
+            margin: EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              border: Border.all(color: PRIMARY_COLOR, width: 1.0),
+              borderRadius: BorderRadius.circular(6.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    '${day.day}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: PRIMARY_COLOR,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    // Selected day schedule content
+                    child: Center(
+                      child: Text(
+                        'Selected',
+                        style: TextStyle(fontSize: 10, color: PRIMARY_COLOR),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        todayBuilder: (context, day, focusedDay) {
+          return Container(
+            margin: EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(6.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    '${day.day}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    // Today's schedule content
+                    child: Center(
+                      child: Text(
+                        'Today',
+                        style: TextStyle(fontSize: 10, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
