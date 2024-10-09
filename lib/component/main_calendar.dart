@@ -13,170 +13,125 @@ class MainCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TableCalendar(
-      locale: 'ko_kr',
-      onDaySelected: onDaySelected,
-      selectedDayPredicate: (date) =>
-          date.year == selectedDate.year &&
-          date.month == selectedDate.month &&
-          date.day == selectedDate.day,
-      firstDay: DateTime(1800, 1, 1),
-      lastDay: DateTime(3000, 1, 1),
-      daysOfWeekHeight: 40,
-      focusedDay: DateTime.now(),
-      rowHeight: 120,
-      headerStyle: HeaderStyle(
-        titleCentered: true,
-        formatButtonVisible: false,
-        titleTextStyle: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 16.0,
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      final availableHeight = constraints.maxHeight;
+      final rowHeight = ((availableHeight - 70) / 6).floor().toDouble();
+      print("rowHeight: ${rowHeight}");
+
+      return TableCalendar(
+        locale: 'ko_kr',
+        onDaySelected: onDaySelected,
+        selectedDayPredicate: (date) =>
+            date.year == selectedDate.year &&
+            date.month == selectedDate.month &&
+            date.day == selectedDate.day,
+        firstDay: DateTime(1800, 1, 1),
+        lastDay: DateTime(3000, 1, 1),
+        focusedDay: DateTime.now(),
+        daysOfWeekHeight: 20,
+        rowHeight: rowHeight,
+        headerStyle: HeaderStyle(
+          titleCentered: true,
+          formatButtonVisible: false,
+          titleTextStyle: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16.0,
+          ),
+          headerMargin: EdgeInsets.only(bottom: 0),
+          headerPadding: EdgeInsets.symmetric(vertical: 8),
         ),
-        headerMargin: EdgeInsets.only(bottom: 8),
-      ),
-      calendarStyle: CalendarStyle(
-        cellMargin: EdgeInsets.all(1),
-        isTodayHighlighted: true,
-        todayDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.0),
-          color: Colors.red,
-        ),
-        defaultDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.0),
-          color: LIGHT_GREY_COLOR,
-        ),
-        weekendDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.0),
-          color: LIGHT_GREY_COLOR,
-        ),
-        selectedDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.0),
-          border: Border.all(
+        calendarStyle: CalendarStyle(
+          cellMargin: EdgeInsets.all(0),
+          cellPadding: EdgeInsets.all(0),
+          isTodayHighlighted: true,
+          todayDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6.0),
+            color: Colors.red,
+          ),
+          defaultDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6.0),
+            color: LIGHT_GREY_COLOR,
+          ),
+          weekendDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6.0),
+            color: LIGHT_GREY_COLOR,
+          ),
+          selectedDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6.0),
+            border: Border.all(
+              color: PRIMARY_COLOR,
+              width: 1.0,
+            ),
+          ),
+          defaultTextStyle: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: DARK_GREY_COLOR,
+          ),
+          weekendTextStyle: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: DARK_GREY_COLOR,
+          ),
+          selectedTextStyle: TextStyle(
+            fontWeight: FontWeight.w600,
             color: PRIMARY_COLOR,
-            width: 1.0,
           ),
         ),
-        defaultTextStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: DARK_GREY_COLOR,
+        calendarBuilders: CalendarBuilders(
+          defaultBuilder: (context, day, focusedDay) {
+            return _buildCalendarCell(
+              day,
+              LIGHT_GREY_COLOR,
+              DARK_GREY_COLOR,
+            );
+          },
+          selectedBuilder: (context, day, focusedDay) {
+            return _buildCalendarCell(
+              day,
+              Colors.white,
+              PRIMARY_COLOR,
+              borderColor: PRIMARY_COLOR,
+            );
+          },
+          todayBuilder: (context, day, focusedDay) {
+            return _buildCalendarCell(day, Colors.red, Colors.white);
+          },
         ),
-        weekendTextStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: DARK_GREY_COLOR,
-        ),
-        selectedTextStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: PRIMARY_COLOR,
-        ),
-      ),
-      calendarBuilders: CalendarBuilders(
-        defaultBuilder: (context, day, focusedDay) {
-          return Container(
-            margin: EdgeInsets.all(1), // Reduce margin even further if needed
-            decoration: BoxDecoration(
-              color: LIGHT_GREY_COLOR,
-              borderRadius: BorderRadius.circular(6.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, top: 2),
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: DARK_GREY_COLOR,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    // This is where you can add your schedule content
-                    // For now, it's just a placeholder
-                    child: Center(
-                      child: Text(
-                        'Schedule',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-        selectedBuilder: (context, day, focusedDay) {
-          return Container(
-            margin: EdgeInsets.all(1),
-            decoration: BoxDecoration(
-              border: Border.all(color: PRIMARY_COLOR, width: 1.0),
-              borderRadius: BorderRadius.circular(6.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, top: 2),
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: PRIMARY_COLOR,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    // Selected day schedule content
-                    child: Center(
-                      child: Text(
-                        'Selected',
-                        style: TextStyle(fontSize: 10, color: PRIMARY_COLOR),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-        todayBuilder: (context, day, focusedDay) {
-          return Container(
-            margin: EdgeInsets.all(1),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(6.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, top: 2),
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    // Today's schedule content
-                    child: Center(
-                      child: Text(
-                        'Today',
-                        style: TextStyle(fontSize: 10, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+      );
+    });
   }
+}
+
+Widget _buildCalendarCell(DateTime day, Color backgroundColor, Color textColor,
+    {Color? borderColor}) {
+  return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: borderColor != null ? Border.all(color: borderColor) : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 2),
+            child: Text(
+              '${day.day}',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              child: Center(
+                child: Text(
+                  'Schedule',
+                  style: TextStyle(fontSize: 10, color: textColor),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ));
 }
